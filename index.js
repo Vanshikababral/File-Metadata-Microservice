@@ -12,16 +12,23 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(process.cwd() + '/public'));
 
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
 app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
 app.post('/api/fileanalyse', upload.single('upfile'), (req, res) => {
-  const { originalname, mimetype, size } = req.file;
+  const file = req.file;
+  if (!file) {
+    return res.json({ error: 'Please upload a file' });
+  }
+
   res.json({
-    name: originalname,
-    type: mimetype,
-    size: size
+    name: file.originalname,
+    type: file.mimetype,
+    size: file.size
   });
 });
 const port = process.env.PORT || 3000;
