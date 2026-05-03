@@ -5,36 +5,37 @@ const multer = require('multer');
 
 var app = express();
 
-// Use the exact CORS config recommended for freeCodeCamp compatibility
-app.use(cors({ optionsSuccessStatus: 200 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use('/public', express.static(process.cwd() + '/public'));
+// Standard FCC CORS config
+app.use(cors());
+app.use('/public', express.static(__dirname + '/public'));
+
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/views/index.html');
+});
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.get('/', function (req, res) {
-  res.sendFile(process.cwd() + '/views/index.html');
-});
-
-// Wrapping multer in the route handler as recommended to ensure errors are caught
-app.post('/api/fileanalyse', (req, res) => {
-  upload.single('upfile')(req, res, (err) => {
-    if (err) {
-      return res.json({ error: 'Multer error occurred during upload' });
+// Placing the upload route BEFORE any other body parsing middleware
+// to ensure multer has full control over the multipart stream.
+app.post('/api/fileanalyse', upload.single('upfile'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.json({ error: 'No file uploaded' });
     }
-    const file = req.file;
-    if (!file) {
-      return res.json({ error: 'Please upload a file' });
-    }
-
+    
     res.json({
-      name: file.originalname,
-      type: file.mimetype,
-      size: file.size
+      name: req.file.originalname,
+      type: req.file.mimetype,
+      size: req.file.size
     });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
+// Other middlewares moved below the file upload route
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 3000;
 app.listen(port, function () {
