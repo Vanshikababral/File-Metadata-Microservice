@@ -1,9 +1,7 @@
 var express = require('express');
 var cors = require('cors');
-require('dotenv').config()
-
+require('dotenv').config();
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
 
 var app = express();
 
@@ -12,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(process.cwd() + '/public'));
 
-const multer = require('multer');
+// Configure multer to use memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.get('/', function (req, res) {
@@ -31,6 +29,7 @@ app.post('/api/fileanalyse', upload.single('upfile'), (req, res) => {
     size: file.size
   });
 });
+
 const port = process.env.PORT || 3000;
 app.listen(port, function () {
   console.log('Your app is listening on port ' + port)
