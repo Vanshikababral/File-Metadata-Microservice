@@ -2,12 +2,19 @@ var express = require('express');
 var cors = require('cors');
 require('dotenv').config();
 const multer = require('multer');
+const mongoose = require('mongoose');
 
 var app = express();
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected...'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Standard FCC CORS config
 app.use(cors());
 app.use('/public', express.static(__dirname + '/public'));
+
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
